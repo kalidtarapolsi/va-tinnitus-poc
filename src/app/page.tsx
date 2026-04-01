@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { processClaimAutomated, generateDecisionLetter, type ClaimSubmission, type ProcessingResult, type ProcessingStep, type VeteranInfo } from '@/engine/ratingEngine';
 import { getMOSByBranch, type MOSEntry } from '@/data/mosNoiseExposure';
 
@@ -22,10 +22,10 @@ export default function Home() {
     setStage('processing');
   };
 
-  const handleProcessingComplete = (res: ProcessingResult) => {
+  const handleProcessingComplete = useCallback((res: ProcessingResult) => {
     setResult(res);
     setStage('results');
-  };
+  }, []);
 
   const handleReset = () => {
     setStage('intro');
@@ -387,7 +387,8 @@ function ProcessingView({ claim, onComplete }: {
   const [result, setResult] = useState<ProcessingResult | null>(null);
   const [manualMinutes, setManualMinutes] = useState(0);
   const [autoSeconds, setAutoSeconds] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     // Run the engine immediately
@@ -396,22 +397,27 @@ function ProcessingView({ claim, onComplete }: {
 
     // Animate steps one at a time
     let step = 0;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const interval = setInterval(() => {
-      if (step < res.processingSteps.length) {
+      const currentStepData = res.processingSteps[step];
+      if (step < res.processingSteps.length && currentStepData) {
         setCurrentStep(step);
         // Accumulate manual time
-        setManualMinutes(prev => prev + res.processingSteps[step].manualEquivalentMinutes);
-        setAutoSeconds(prev => prev + res.processingSteps[step].durationMs / 1000);
+        setManualMinutes(prev => prev + currentStepData.manualEquivalentMinutes);
+        setAutoSeconds(prev => prev + currentStepData.durationMs / 1000);
         step++;
       } else {
         clearInterval(interval);
         // Brief pause then show results
-        setTimeout(() => onComplete(res), 1500);
+        timeoutId = setTimeout(() => onCompleteRef.current(res), 1500);
       }
     }, 800);
 
-    return () => clearInterval(interval);
-  }, [claim, onComplete]);
+    return () => {
+      clearInterval(interval);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [claim]);
 
   if (!result) return null;
 
@@ -491,7 +497,7 @@ function ResultsView({ result, onReset }: {
 }) {
   const [showLetter, setShowLetter] = useState(false);
   const letter = generateDecisionLetter(result);
-  const totalManualMinutes = result.manualEquivalentMinutes;
+  const totalManualMinutes = result.manualEquivalentMinutes || result.processingSteps.reduce((s, p) => s + (p.manualEquivalentMinutes || 0), 0);
   const savingsPerClaim = ((totalManualMinutes / 60) * 44.30).toFixed(2); // blended rate with benefits
   const annualSavings = (250000 * parseFloat(savingsPerClaim)).toFixed(0);
 
