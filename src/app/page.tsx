@@ -39,7 +39,7 @@ export default function Home() {
       <header className="bg-[#0A1628] text-white">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#00B4D8] rounded flex items-center justify-center font-bold text-sm">A</div>
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/aquia-logo.png`} alt="Aquia" className="w-8 h-8 rounded" />
             <div>
               <div className="font-semibold text-sm tracking-wide">AQUIA</div>
               <div className="text-[10px] text-gray-400 tracking-widest uppercase">VA Claims Automation POC</div>
