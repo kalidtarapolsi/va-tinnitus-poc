@@ -143,7 +143,7 @@ function IntroSection({ onStart }: { onStart: () => void }) {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-500 mt-1">&#9679;</span>
-              <span><strong>$52M+/year</strong> in labor cost savings</span>
+              <span><strong>$67M+/year</strong> in labor cost savings</span>
             </li>
           </ul>
         </div>
@@ -387,8 +387,7 @@ function ProcessingView({ claim, onComplete }: {
   const [result, setResult] = useState<ProcessingResult | null>(null);
   const [manualMinutes, setManualMinutes] = useState(0);
   const [autoSeconds, setAutoSeconds] = useState(0);
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  const [processingDone, setProcessingDone] = useState(false);
 
   useEffect(() => {
     // Run the engine immediately
@@ -397,7 +396,6 @@ function ProcessingView({ claim, onComplete }: {
 
     // Animate steps one at a time
     let step = 0;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const interval = setInterval(() => {
       const currentStepData = res.processingSteps[step];
       if (step < res.processingSteps.length && currentStepData) {
@@ -408,14 +406,12 @@ function ProcessingView({ claim, onComplete }: {
         step++;
       } else {
         clearInterval(interval);
-        // Brief pause then show results
-        timeoutId = setTimeout(() => onCompleteRef.current(res), 1500);
+        setProcessingDone(true);
       }
     }, 800);
 
     return () => {
       clearInterval(interval);
-      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [claim]);
 
@@ -483,6 +479,19 @@ function ProcessingView({ claim, onComplete }: {
           </div>
         ))}
       </div>
+
+      {/* View Results button — shown after all steps complete */}
+      {processingDone && result && (
+        <div className="mt-8 text-center animate-fade-in-up">
+          <div className="text-green-700 font-semibold mb-3">All processing steps complete</div>
+          <button
+            onClick={() => onComplete(result)}
+            className="bg-[#0A1628] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#1a2d4a] transition-colors text-lg"
+          >
+            View Results
+          </button>
+        </div>
+      )}
     </div>
   );
 }
