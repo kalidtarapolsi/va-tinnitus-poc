@@ -113,6 +113,10 @@ function IntroSection({ onStart }: { onStart: () => void }) {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-red-500 mt-1">&#9679;</span>
+              <span><strong>~90–120 days</strong> veteran wait time (filed to decision)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-red-500 mt-1">&#9679;</span>
               <span><strong>~250,000</strong> tinnitus claims per year</span>
             </li>
           </ul>
@@ -127,7 +131,7 @@ function IntroSection({ onStart }: { onStart: () => void }) {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-500 mt-1">&#9679;</span>
-              <span>MOS verified against Noise Exposure Listing instantly</span>
+              <span>MOS verified against Noise Exposure Listing — C&P exam waived</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-500 mt-1">&#9679;</span>
@@ -140,6 +144,10 @@ function IntroSection({ onStart }: { onStart: () => void }) {
             <li className="flex items-start gap-2">
               <span className="text-green-500 mt-1">&#9679;</span>
               <span><strong>&lt; 5 seconds</strong> of processing per claim</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-500 mt-1">&#9679;</span>
+              <span><strong>Same-day decision</strong> — no C&P exam wait</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-500 mt-1">&#9679;</span>
@@ -561,11 +569,17 @@ function ResultsView({ result, onReset }: {
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <MetricCard
           label="Processing Time"
           value={`${result.totalProcessingTimeSeconds.toFixed(1)}s`}
           subtext={`vs. ${totalManualMinutes} min manual`}
+          color="green"
+        />
+        <MetricCard
+          label="Veteran Wait Time"
+          value="Same Day"
+          subtext="vs. ~90–120 days manual"
           color="green"
         />
         <MetricCard
